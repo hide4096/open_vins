@@ -87,7 +87,7 @@ endif ()
 
 add_executable(test_webcam_gstreamer src/test_webcam_gstreamer.cpp)
 target_link_libraries(test_webcam_gstreamer ov_core_lib ${thirdparty_libraries})
-install(TARGETS test_webcam
+install(TARGETS test_webcam_gstreamer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
