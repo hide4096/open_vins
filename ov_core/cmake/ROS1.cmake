@@ -85,6 +85,14 @@ if (catkin_FOUND AND ENABLE_ROS)
 
 endif ()
 
+add_executable(test_webcam_gstreamer src/test_webcam_gstreamer.cpp)
+target_link_libraries(test_webcam_gstreamer ov_core_lib ${thirdparty_libraries})
+install(TARGETS test_webcam
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 add_executable(test_webcam src/test_webcam.cpp)
 target_link_libraries(test_webcam ov_core_lib ${thirdparty_libraries})
 install(TARGETS test_webcam
