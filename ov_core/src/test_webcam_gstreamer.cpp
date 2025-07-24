@@ -198,9 +198,11 @@ int main(int argc, char **argv) {
     if (cv::waitKey(10) == 27)
       break;
 
+    /*
     // Convert to grayscale if not
     if (frame.channels() != 1)
       cv::cvtColor(frame, frame, cv::COLOR_RGB2GRAY);
+    */
 
     // Else lets track this image
     ov_core::CameraData message;
