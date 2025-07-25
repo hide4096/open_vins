@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
    "libcamerasrc ! "
    "video/x-raw,width=640,height=480,framerate=30/1 ! "
    "videoconvert ! "
-   "video/x-raw, format=GRAY8 ! "
+   "video/x-raw, format=BGR ! "
    "appsink drop=true sync=false";
   cv::VideoCapture cap(gst_pipeline, cv::CAP_GSTREAMER);
   if(!cap.isOpened()){
@@ -198,11 +198,9 @@ int main(int argc, char **argv) {
     if (cv::waitKey(10) == 27)
       break;
 
-    /*
     // Convert to grayscale if not
     if (frame.channels() != 1)
       cv::cvtColor(frame, frame, cv::COLOR_RGB2GRAY);
-    */
 
     // Else lets track this image
     ov_core::CameraData message;
