@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
   // Histogram method
   ov_core::TrackBase::HistogramMethod method;
-  std::string histogram_method_str = "HISTOGRAM";
+  std::string histogram_method_str = "NONE";
   parser->parse_config("histogram_method", histogram_method_str, false);
   if (histogram_method_str == "NONE") {
     method = ov_core::TrackBase::NONE;
@@ -161,9 +161,9 @@ int main(int argc, char **argv) {
   // Open with Gstreamer
   std::string gst_pipeline =
    "libcamerasrc ! "
-   "video/x-raw,width=640,height=480,framerate=30/1 ! "
+   "video/x-raw,width=320,height=240,framerate=30/1 ! "
    "videoconvert ! "
-   "video/x-raw, format=BGR ! "
+   "video/x-raw, format=GRAY8 ! "
    "appsink drop=true sync=false";
   cv::VideoCapture cap(gst_pipeline, cv::CAP_GSTREAMER);
   if(!cap.isOpened()){
@@ -199,8 +199,10 @@ int main(int argc, char **argv) {
       break;
 
     // Convert to grayscale if not
+    /*
     if (frame.channels() != 1)
       cv::cvtColor(frame, frame, cv::COLOR_RGB2GRAY);
+    */
 
     // Else lets track this image
     ov_core::CameraData message;
