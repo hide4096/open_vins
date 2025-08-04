@@ -158,3 +158,10 @@ install(TARGETS test_sim_repeat
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+add_executable(run_gstreamer_mpu6050 src/gstreamer_mpu6050.cpp)
+target_link_libraries(run_gstreamer_mpu6050 ov_msckf_lib ${thirdparty_libraries})
+install(TARGETS test_sim_repeat
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
