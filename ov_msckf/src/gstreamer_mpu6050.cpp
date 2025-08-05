@@ -105,8 +105,27 @@ double ns_to_sec(int64_t ns){
     return ns / (1000. * 1000. * 1000.);
 }
 
-int main() {
+int main(int argc, char **argv) {
     std::shared_ptr<VioManager> sys;
+
+    if (argc < 1) {
+        return 1;
+    }
+
+    auto parser = std::make_shared<ov_core::YamlParser>(argv[1]);
+
+    VioManagerOptions params;
+    params.print_and_load(parser);
+    params.num_opencv_threads = 0;
+    params.use_multi_threading_pubs = false;
+    params.use_multi_threading_subs = false;
+
+    sys = std::make_shared<VioManager>(params);
+
+    if (!parser->successful()) {
+        PRINT_ERROR(RED "unable to parse all parameters, please fix\n" RESET);
+        std::exit(EXIT_FAILURE);
+    }
 	
 	// IMUの初期化
     ENABLE_IMU("0");
