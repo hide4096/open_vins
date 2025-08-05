@@ -111,13 +111,13 @@ int main() {
 	// IMUの初期化
     ENABLE_IMU("0");
 	
-	IMUData_t imu_buffer[30];
+	IMUData_t imu_buffer[20];
 
 	IMUInfo_t setting = {
 		.anglvel_scale = 0.001064724,
 		.accel_scale = 0.004785,
 		.sampling_freq = 200,
-		.buffer_length = 100,
+		.buffer_length = 20,
 	};
 
 	if(!init_IMU(setting)){
@@ -128,7 +128,7 @@ int main() {
 	// カメラの初期化
 	std::string gstPipeline =
 		"libcamerasrc ! "
-		"video/x-raw,width=320,height=240,framerate=30/1 ! "
+		"video/x-raw,width=640,height=480,framerate=30/1 ! "
         "videoconvert ! "
         "video/x-raw, format=GRAY8 ! "
         "appsink drop=true sync=false";
@@ -152,7 +152,7 @@ int main() {
 
 	cv::Mat frame;
 	int count = 0;
-    while(count < 300){
+    while(count < 30 * 60 * 2){
         // フレーム取得
 		cap >> frame;
 		auto now = std::chrono::system_clock::now();
@@ -204,6 +204,14 @@ int main() {
         cam_message.masks.push_back(cv::Mat::zeros(cv::Size(frame.cols, frame.rows), CV_8UC1));
 
         sys->feed_measurement_camera(cam_message);
+
+        // 表示
+        std::shared_ptr<State> state = sys->get_state();
+        Eigen::Vector3d position = state->_imu->pos();
+        std::cout << "Position: ["
+                  << position.x() << ", "
+                  << position.y() << ", "
+                  << position.z() << "]" << std::endl;
 
 		count++;
     }

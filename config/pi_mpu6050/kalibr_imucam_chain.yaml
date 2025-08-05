@@ -1,0 +1,16 @@
+%YAML:1.0 # need to specify the file type at the top!
+
+cam0:
+  T_cam_imu:
+    - [1.0, 0.0, 0.0, 0.0]
+    - [0.0, 0.0, 1.0, 0.0]
+    - [0.0, -1.0, 0.0, 0.0]
+    - [0.0, 0.0, 0.0, 1.0]
+  cam_overlaps: [1]
+  camera_model: pinhole
+  distortion_coeffs: [-0.013721808247486035, 0.020727425669427896, -0.012786476702685545,
+                      0.0025242267320687625]
+  distortion_model: equidistant
+  intrinsics: [278.66723066149086, 278.48991409740296, 319.75221200593535, 241.96858910358173]
+  resolution: [640, 480]
+  timeshift_cam_imu: -0.016684572091862235
