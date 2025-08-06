@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
         sys->feed_measurement_camera(cam_message);
 
         // 表示
-        if(!sys->initialized()){
+        if(sys->initialized()){
             std::shared_ptr<State> state = sys->get_state();
             Eigen::Vector3d position = state->_imu->pos();
             std::cout << "Position: ["
