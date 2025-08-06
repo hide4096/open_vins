@@ -17,6 +17,10 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "core/VioManager.h"
 #include "sim/Simulator.h"
 #include "state/Propagator.h"
@@ -64,10 +68,10 @@ typedef struct{
 } IMUData_t;
 
 typedef struct{
-	float anglvel_scale;
-	float accel_scale;
-	int sampling_freq;
-	int buffer_length;
+    float anglvel_scale;
+    float accel_scale;
+    int sampling_freq;
+    int buffer_length;
 } IMUInfo_t;
 
 /**
@@ -126,38 +130,38 @@ int main(int argc, char **argv) {
         PRINT_ERROR(RED "unable to parse all parameters, please fix\n" RESET);
         std::exit(EXIT_FAILURE);
     }
-	
-	// IMUの初期化
+    
+    // IMUの初期化
     ENABLE_IMU("0");
-	
-	IMUData_t imu_buffer[20];
+    
+    IMUData_t imu_buffer[20];
 
-	IMUInfo_t setting = {
-		.anglvel_scale = 0.001064724,
-		.accel_scale = 0.004785,
-		.sampling_freq = 200,
-		.buffer_length = 20,
-	};
+    IMUInfo_t setting = {
+        .anglvel_scale = 0.001064724,
+        .accel_scale = 0.004785,
+        .sampling_freq = 200,
+        .buffer_length = 20,
+    };
 
-	if(!init_IMU(setting)){
+    if(!init_IMU(setting)){
         std::perror("failed to setting IMU");
-		return 1;
-	}
+        return 1;
+    }
 
-	// カメラの初期化
-	std::string gstPipeline =
-		"libcamerasrc ! "
-		"video/x-raw,width=640,height=480,framerate=30/1 ! "
+    // カメラの初期化
+    std::string gstPipeline =
+        "libcamerasrc ! "
+        "video/x-raw,width=640,height=480,framerate=30/1 ! "
         "videoconvert ! "
         "video/x-raw, format=GRAY8 ! "
         "appsink drop=true sync=false";
 
     cv::VideoCapture cap(gstPipeline, cv::CAP_GSTREAMER);
 
-	if(!cap.isOpened()){
+    if(!cap.isOpened()){
         std::perror("failed to open camera");
-		return 1;
-	}
+        return 1;
+    }
 
  
     // IMU読み取り開始
@@ -169,64 +173,52 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-	cv::Mat frame;
-	int count = 0;
+    cv::Mat frame;
+    int count = 0;
     while(count < 30 * 60 * 2){
         // フレーム取得
-		cap >> frame;
-		auto now = std::chrono::system_clock::now();
-		int64_t frame_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
-			now.time_since_epoch()
-		).count();
-		
-		// フレームが空なら終了
-		if(frame.empty()){
-        	std::perror("empty frame recieved");
-			break;
-		}
+        cap >> frame;
+        auto now = std::chrono::system_clock::now();
+        int64_t frame_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            now.time_since_epoch()
+        ).count();
+        
+        // フレームが空なら終了
+        if(frame.empty()){
+            std::perror("empty frame recieved");
+            break;
+        }
         
         // IMU取得
-    	ssize_t rd = read(fd, imu_buffer, sizeof(imu_buffer));
+        ssize_t rd = read(fd, imu_buffer, sizeof(imu_buffer));
 
-		// IMU取得失敗してたら終了
+        // IMU取得失敗してたら終了
         if (rd < 0) {
-			// データないだけの時はスキップ
-			if(errno != EAGAIN && errno != EWOULDBLOCK){
-            	std::perror("read");
-				break;
-			}
+            // データないだけの時はスキップ
+            if(errno != EAGAIN && errno != EWOULDBLOCK){
+                std::perror("read");
+                break;
+            }
         }
 
         // IMUデータを供給
-		int length = rd / sizeof(IMUData_t);
-		for(int i=0;i<length;i++){
-			IMUData_t data = imu_buffer[i];
-			double accelx = (int16_t)be16toh(data.ax) * setting.accel_scale;
-			double accely = (int16_t)be16toh(data.ay) * setting.accel_scale;
-			double accelz = (int16_t)be16toh(data.az) * setting.accel_scale;
-			double anglevelx = (int16_t)be16toh(data.gx) * setting.anglvel_scale;
-			double anglevely = (int16_t)be16toh(data.gy) * setting.anglvel_scale;
-			double anglevelz = (int16_t)be16toh(data.gz) * setting.anglvel_scale;
+        int length = rd / sizeof(IMUData_t);
+        for(int i=0;i<length;i++){
+            IMUData_t data = imu_buffer[i];
+            double accelx = (int16_t)be16toh(data.ax) * setting.accel_scale;
+            double accely = (int16_t)be16toh(data.ay) * setting.accel_scale;
+            double accelz = (int16_t)be16toh(data.az) * setting.accel_scale;
+            double anglevelx = (int16_t)be16toh(data.gx) * setting.anglvel_scale;
+            double anglevely = (int16_t)be16toh(data.gy) * setting.anglvel_scale;
+            double anglevelz = (int16_t)be16toh(data.gz) * setting.anglvel_scale;
 
-            if(i == 0){
-                std::cout << "gyro: ["
-                    << anglevelx << ", "
-                    << anglevely << ", "
-                    << anglevelz << "]" << std::endl;
-                std::cout << "accel: ["
-                    << accelx << ", "
-                    << accely << ", "
-                    << accelz << "]" << std::endl;
-
-            }
-            
             ov_core::ImuData imu_message;
             imu_message.timestamp = ns_to_sec(data.timestamp);
             imu_message.wm << anglevelx, anglevely, anglevelz;
             imu_message.am << accelx, accely, accelz;
 
             sys->feed_measurement_imu(imu_message);
-		}
+        }
         // 画像を供給
         ov_core::CameraData cam_message;
         cam_message.timestamp = ns_to_sec(frame_timestamp);
@@ -240,16 +232,29 @@ int main(int argc, char **argv) {
         if(sys->initialized()){
             std::shared_ptr<State> state = sys->get_state();
             Eigen::Vector3d position = state->_imu->pos();
-            std::cout << "Position: ["
-                    << position.x() << ", "
-                    << position.y() << ", "
-                    << position.z() << "]" << std::endl;
+
+            // UDPブロードキャスト送信
+            static int udp_sock = -1;
+            static sockaddr_in udp_addr;
+            if (udp_sock == -1) {
+                udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
+                int broadcastEnable = 1;
+                setsockopt(udp_sock, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable));
+                memset(&udp_addr, 0, sizeof(udp_addr));
+                udp_addr.sin_family = AF_INET;
+                udp_addr.sin_port = htons(47269);
+                udp_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+            }
+            // Teleplot形式で送信
+            char msg[128];
+            int msglen = snprintf(msg, sizeof(msg), ">posx:%f\n>posy:%f\n>posz:%f\n", position.x(), position.y(), position.z());
+            sendto(udp_sock, msg, msglen, 0, (struct sockaddr*)&udp_addr, sizeof(udp_addr));
         }
 
-		count++;
+        count++;
     }
-   	
-	std::cout << "abort" << std::endl;
+    
+    std::cout << "abort" << std::endl;
 
     close(fd);
     ENABLE_IMU("0");
