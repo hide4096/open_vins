@@ -201,12 +201,12 @@ int main(int argc, char **argv) {
 		int length = rd / sizeof(IMUData_t);
 		for(int i=0;i<length;i++){
 			IMUData_t data = imu_buffer[i];
-			float accelx = be16toh(data.ax) * setting.accel_scale;
-			float accely = be16toh(data.ay) * setting.accel_scale;
-			float accelz = be16toh(data.az) * setting.accel_scale;
-			float anglevelx = be16toh(data.gx) * setting.anglvel_scale;
-			float anglevely = be16toh(data.gy) * setting.anglvel_scale;
-			float anglevelz = be16toh(data.gz) * setting.anglvel_scale;
+			double accelx = be16toh(data.ax) * setting.accel_scale;
+			double accely = be16toh(data.ay) * setting.accel_scale;
+			double accelz = be16toh(data.az) * setting.accel_scale;
+			double anglevelx = be16toh(data.gx) * setting.anglvel_scale;
+			double anglevely = be16toh(data.gy) * setting.anglvel_scale;
+			double anglevelz = be16toh(data.gz) * setting.anglvel_scale;
             
             ov_core::ImuData imu_message;
             imu_message.timestamp = ns_to_sec(data.timestamp);
@@ -225,12 +225,14 @@ int main(int argc, char **argv) {
         sys->feed_measurement_camera(cam_message);
 
         // 表示
-        std::shared_ptr<State> state = sys->get_state();
-        Eigen::Vector3d position = state->_imu->pos();
-        std::cout << "Position: ["
-                  << position.x() << ", "
-                  << position.y() << ", "
-                  << position.z() << "]" << std::endl;
+        if(!sys->initialized()){
+            std::shared_ptr<State> state = sys->get_state();
+            Eigen::Vector3d position = state->_imu->pos();
+            std::cout << "Position: ["
+                    << position.x() << ", "
+                    << position.y() << ", "
+                    << position.z() << "]" << std::endl;
+        }
 
 		count++;
     }
