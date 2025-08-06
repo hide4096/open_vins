@@ -201,12 +201,12 @@ int main(int argc, char **argv) {
 		int length = rd / sizeof(IMUData_t);
 		for(int i=0;i<length;i++){
 			IMUData_t data = imu_buffer[i];
-			double accelx = be16toh(data.ax) * setting.accel_scale;
-			double accely = be16toh(data.ay) * setting.accel_scale;
-			double accelz = be16toh(data.az) * setting.accel_scale;
-			double anglevelx = be16toh(data.gx) * setting.anglvel_scale;
-			double anglevely = be16toh(data.gy) * setting.anglvel_scale;
-			double anglevelz = be16toh(data.gz) * setting.anglvel_scale;
+			double accelx = (int16_t)be16toh(data.ax) * setting.accel_scale;
+			double accely = (int16_t)be16toh(data.ay) * setting.accel_scale;
+			double accelz = (int16_t)be16toh(data.az) * setting.accel_scale;
+			double anglevelx = (int16_t)be16toh(data.gx) * setting.anglvel_scale;
+			double anglevely = (int16_t)be16toh(data.gy) * setting.anglvel_scale;
+			double anglevelz = (int16_t)be16toh(data.gz) * setting.anglvel_scale;
 
             if(i == 0){
                 std::cout << "gyro: ["
