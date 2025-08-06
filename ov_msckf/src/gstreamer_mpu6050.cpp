@@ -207,6 +207,18 @@ int main(int argc, char **argv) {
 			double anglevelx = be16toh(data.gx) * setting.anglvel_scale;
 			double anglevely = be16toh(data.gy) * setting.anglvel_scale;
 			double anglevelz = be16toh(data.gz) * setting.anglvel_scale;
+
+            if(i == 0){
+                std::cout << "gyro: ["
+                    << anglevelx << ", "
+                    << anglevely << ", "
+                    << anglevelz << "]" << std::endl;
+                std::cout << "accel: ["
+                    << accelx << ", "
+                    << accely << ", "
+                    << accelz << "]" << std::endl;
+
+            }
             
             ov_core::ImuData imu_message;
             imu_message.timestamp = ns_to_sec(data.timestamp);
